@@ -1,0 +1,33 @@
+# Virtual environment
+.venv/
+
+# Backups (user-specific)
+backups/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test files
+*.test.docx
+*.test.xlsx
+test_*.docx
+test_*.xlsx
