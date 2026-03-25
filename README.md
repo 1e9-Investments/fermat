@@ -92,16 +92,29 @@ Backups are saved to `./backups/` with timestamps.
 ## Excel Formatting (`.xlsx`)
 
 ### Typography
-- **Font:** 11pt Aptos, always black
+- **Font:** 11pt Aptos
 - **Headers:** Bold, 12pt for titles
 
-### Color Palette (Bright Pastels Only)
+### Text Color (Wall Street Data Source Convention)
+| Color | Hex | Meaning |
+|-------|-----|---------|
+| **Blue** | `#0000FF` | Hardcoded values / manual inputs |
+| **Black** | `#000000` | Formulas / calculated values |
+| **Green** | `#006400` | References to other sheets |
+| **Purple** | `#800080` | References to other workbooks |
+
+### Fill Colors (Bright Pastels Only)
 | Color | Hex | Use |
 |-------|-----|-----|
 | Green | `#C6EFCE` | Positive indicators |
-| Yellow | `#FFE699` | Warnings, highlights |
+| Yellow | `#FFE699` | Assumptions, highlights |
 | Blue | `#DEEBF7` | Headers, neutral |
 | Orange | `#FCE4D6` | Alerts |
+
+### Assumption Cells
+- **Yellow fill** (`#FFE699`) + **medium outside border**
+- Applied to hardcoded inputs in "Assumption", "Input", "Driver", "Sensitivity" rows
+- Makes key model drivers instantly visible
 
 **No dark fills.** Ever.
 

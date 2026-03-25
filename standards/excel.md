@@ -51,9 +51,12 @@ type: feedback
 - **Calibri** fallback if Aptos unavailable
 - 11pt throughout - no smaller sizes
 
-### Text Color
-- Always black (#000000)
-- Avoid gray or muted text colors unless very strong reason
+### Text Color (Wall Street Data Source Convention)
+Color-code cells by data source:
+- **Blue (#0000FF):** Hardcoded values / manual inputs
+- **Black (#000000):** Formulas / calculated values
+- **Green (#006400):** References to other sheets in same workbook
+- **Purple (#800080):** References to other workbooks (external links)
 
 ### Casing
 - Avoid ALL CAPS
@@ -63,9 +66,14 @@ type: feedback
 
 ### Fill Colors (Bright Pastels)
 - Green: #C6EFCE
-- Yellow: #FFE699
+- Yellow: #FFE699 (also used for assumptions)
 - Blue: #DEEBF7
 - Orange: #FCE4D6
+
+### Assumption Cells
+- **Yellow fill (#FFE699)** + **medium outside border**
+- Applied to hardcoded numeric inputs in rows labeled "Assumption", "Input", "Driver", "Sensitivity", "Scenario"
+- Makes key model inputs instantly visible
 
 ### Avoid
 - Dark fills with white text

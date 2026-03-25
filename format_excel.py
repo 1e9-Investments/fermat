@@ -59,6 +59,14 @@ THIN_BORDER = Border(
     bottom=Side(style='thin', color='D9D9D9')
 )
 
+# Assumption cells: yellow fill + medium outside border (Wall St standard)
+ASSUMPTION_BORDER = Border(
+    left=Side(style='medium', color='000000'),
+    right=Side(style='medium', color='000000'),
+    top=Side(style='medium', color='000000'),
+    bottom=Side(style='medium', color='000000')
+)
+
 # === CHART DIMENSIONS: 3" tall × 5" wide ===
 CHART_HEIGHT_CM = 7.62  # 3 inches
 CHART_WIDTH_CM = 12.7   # 5 inches
@@ -178,6 +186,53 @@ def is_percentage_column(header_text):
     header = str(header_text).lower()
     pct_indicators = ['%', 'margin', 'yield', 'roe', 'roa', 'roic', 'growth', 'cagr', 'pct', 'percent', 'franchise']
     return any(ind in header for ind in pct_indicators)
+
+
+def get_cell_font_by_type(cell):
+    """
+    Wall Street color coding convention:
+    - Blue (#0000FF): Hardcoded values (no formula)
+    - Black (#000000): Formulas / calculated values
+    - Green (#006400): References to other sheets in same workbook
+    - Purple (#800080): References to other workbooks (external links)
+    """
+    # Check if cell has a formula
+    if cell.data_type == 'f' or (hasattr(cell, 'value') and isinstance(cell.value, str) and str(cell.value).startswith('=')):
+        formula = str(cell.value) if cell.value else ''
+
+        # Check for external workbook reference: [Workbook.xlsx]Sheet!A1
+        if '[' in formula and ']' in formula:
+            return FONT_WORKBOOK_REF  # Purple
+
+        # Check for sheet reference: Sheet!A1 or 'Sheet Name'!A1
+        if '!' in formula:
+            return FONT_SHEET_REF  # Green
+
+        # Regular formula
+        return FONT_FORMULA  # Black
+
+    # No formula = hardcoded value
+    return FONT_HARDCODE  # Blue
+
+
+def is_assumption_cell(cell, sheet, header_row):
+    """
+    Detect assumption cells - typically:
+    - Hardcoded numeric inputs
+    - Often in specific rows/sections marked as assumptions
+    - Usually blue (hardcoded) + need yellow fill + outside border
+
+    Heuristic: Check if row label contains 'assumption' or cell is in assumption section
+    """
+    # Check if this row's label contains assumption-related keywords
+    row_label = sheet.cell(row=cell.row, column=2).value
+    if row_label and isinstance(row_label, str):
+        label_lower = row_label.lower()
+        if any(kw in label_lower for kw in ['assumption', 'input', 'driver', 'sensitivity', 'scenario']):
+            # Only mark as assumption if it's a hardcoded numeric value
+            if cell.data_type != 'f' and is_numeric_cell(cell.value):
+                return True
+    return False
 
 
 def unmerge_all_cells(sheet):
@@ -303,7 +358,14 @@ def format_header_row(sheet, header_row):
 
 
 def format_data_cells(sheet, header_row):
-    """Format data cells - 11pt Aptos, black text, wrap text, apply number formats"""
+    """
+    Format data cells with Wall Street color coding:
+    - Blue: Hardcoded values
+    - Black: Formulas
+    - Green: References to other sheets
+    - Purple: References to other workbooks
+    - Yellow fill + outside border: Assumption cells
+    """
     # First, determine column types from headers
     col_types = {}
     for col in range(1, sheet.max_column + 1):
@@ -325,12 +387,17 @@ def format_data_cells(sheet, header_row):
             if col == 1:  # Navigation column - skip
                 continue
 
-            # Apply default font - always 11pt Aptos, black
-            cell.font = DEFAULT_FONT
+            # Apply color-coded font based on cell type (Wall St convention)
+            cell.font = get_cell_font_by_type(cell)
             cell.border = THIN_BORDER
 
+            # Check if this is an assumption cell - apply yellow fill + outside border
+            if is_assumption_cell(cell, sheet, header_row):
+                cell.fill = YELLOW_FILL
+                cell.border = ASSUMPTION_BORDER
+
             # Fix text content
-            if isinstance(cell.value, str):
+            if isinstance(cell.value, str) and not str(cell.value).startswith('='):
                 cell.value = fix_em_dashes(fix_currency_notation(to_title_case(cell.value)))
 
             # Alignment and number format based on content type
